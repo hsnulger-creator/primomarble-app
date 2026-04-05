@@ -1,0 +1,81 @@
+================================================
+  PRIMO MARBLE DAY CHECK APP - LOCAL BUILD GUIDE
+  (No cloud service needed - 100% local)
+================================================
+
+WHAT YOU NEED TO INSTALL (all free):
+  1. Node.js
+  2. Java JDK 17
+  3. Android Studio
+
+NOTE: Visual Studio Community is NOT needed.
+      Use Android Studio instead (it's Google's free IDE for Android).
+
+================================================
+STEP 1 - INSTALL NODE.JS
+================================================
+1. Go to: https://nodejs.org
+2. Download "LTS" version
+3. Run installer (keep all defaults)
+
+================================================
+STEP 2 - INSTALL JAVA JDK 17
+================================================
+1. Go to: https://learn.microsoft.com/en-us/java/openjdk/download#openjdk-17
+2. Download: Microsoft Build of OpenJDK 17 - Windows x64 (.msi)
+3. Run installer (keep all defaults)
+
+================================================
+STEP 3 - INSTALL ANDROID STUDIO
+================================================
+1. Go to: https://developer.android.com/studio
+2. Download and install Android Studio
+3. Open Android Studio, click "More Actions" > SDK Manager
+4. Make sure these are installed (SDK Tools tab):
+   - Android SDK Build-Tools
+   - Android SDK Platform-Tools
+5. Note the "Android SDK Location" path at the top
+   (usually: C:\Users\YourName\AppData\Local\Android\Sdk)
+
+================================================
+STEP 4 - SET ANDROID PATH
+================================================
+1. Double-click SET_ANDROID_PATH.bat
+2. Paste your Android SDK Location path when asked
+3. Close the window
+
+================================================
+STEP 5 - BUILD YOUR APK
+================================================
+1. Double-click SETUP_AND_BUILD.bat
+2. Wait 3-5 minutes for the build to finish
+3. Your APK will be at:
+   android\app\build\outputs\apk\release\app-release.apk
+
+================================================
+STEP 6 - INSTALL ON ANDROID PHONE
+================================================
+1. Copy the app-release.apk to your phone via USB or WhatsApp
+2. On phone: open File Manager, find the apk, tap it
+3. If asked: tap "Allow from this source"
+4. Tap Install
+
+================================================
+FIRST TIME USING THE APP
+================================================
+Username: PrimoMarble
+Password: Prm4075
+
+1. Login with the credentials above
+2. Tap the gear icon (top right) to go to Settings
+3. Enter the manager email address and tap Save
+4. You're ready to use the inspection forms!
+
+================================================
+REBUILDING AFTER CHANGES
+================================================
+If you need to make changes and rebuild:
+- Just run SETUP_AND_BUILD.bat again
+- It will rebuild with your latest changes
+
+================================================

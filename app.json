@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Primo Marble",
+    "slug": "primo-marble-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.jpg",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a4ed8"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.jpg",
+        "backgroundColor": "#1a4ed8"
+      },
+      "package": "com.primomarble.daycheckapp",
+      "permissions": []
+    },
+    "ios": {
+      "bundleIdentifier": "com.primomarble.daycheckapp",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Used for attaching photos to inspection reports."
+      }
+    },
+    "plugins": [
+      "expo-mail-composer"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "64699f45-4de5-4dd0-9947-1e8ab92331fe"
+      }
+    }
+  }
+}
