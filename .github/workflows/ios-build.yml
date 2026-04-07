@@ -64,6 +64,7 @@ jobs:
             archive \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM=K6864D294S \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8 \
             -authenticationKeyID "3CL3588VSB" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
@@ -94,6 +95,7 @@ jobs:
             -archivePath ios/PrimoMarble.xcarchive \
             -exportPath ios/output \
             -exportOptionsPlist ExportOptions.plist \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8 \
             -authenticationKeyID "3CL3588VSB" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
