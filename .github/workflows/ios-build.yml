@@ -34,7 +34,16 @@ jobs:
       - name: Write App Store Connect API key
         env:
           PRIVATE_KEY_B64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
-        run: python3 -c "import os,base64; open('AuthKey_7369S7N8QZ.p8','wb').write(base64.b64decode(os.environ['PRIVATE_KEY_B64']))"
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          python3 -c "
+          import os, base64
+          key = os.environ['PRIVATE_KEY_B64'].strip()
+          data = base64.b64decode(key)
+          path = os.path.expanduser('~/.appstoreconnect/private_keys/AuthKey_7369S7N8QZ.p8')
+          open(path, 'wb').write(data)
+          print(f'Written {len(data)} bytes to {path}')
+          "
 
       - name: Detect workspace and scheme
         run: |
@@ -55,7 +64,6 @@ jobs:
             archive \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM=K6864D294S \
-            -authenticationKeyPath "$PWD/AuthKey_7369S7N8QZ.p8" \
             -authenticationKeyID "7369S7N8QZ" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
@@ -86,7 +94,6 @@ jobs:
             -archivePath ios/PrimoMarble.xcarchive \
             -exportPath ios/output \
             -exportOptionsPlist ExportOptions.plist \
-            -authenticationKeyPath "$PWD/AuthKey_7369S7N8QZ.p8" \
             -authenticationKeyID "7369S7N8QZ" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
