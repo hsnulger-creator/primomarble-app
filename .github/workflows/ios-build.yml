@@ -35,15 +35,12 @@ jobs:
         env:
           PRIVATE_KEY_B64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: |
-          mkdir -p ~/.appstoreconnect/private_keys
-          python3 -c "
-          import os, base64
-          key = os.environ['PRIVATE_KEY_B64'].strip()
-          data = base64.b64decode(key)
-          path = os.path.expanduser('~/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8')
-          open(path, 'wb').write(data)
-          print(f'Written {len(data)} bytes to {path}')
-          "
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          KEY_PATH="$HOME/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8"
+          echo "$PRIVATE_KEY_B64" | base64 --decode > "$KEY_PATH"
+          echo "KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
+          echo "Key written: $(wc -c < "$KEY_PATH") bytes"
+          echo "First line: $(head -1 "$KEY_PATH")"
 
       - name: Detect workspace and scheme
         run: |
@@ -64,7 +61,7 @@ jobs:
             archive \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM=K6864D294S \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8 \
+            -authenticationKeyPath "$KEY_PATH" \
             -authenticationKeyID "3CL3588VSB" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
@@ -95,7 +92,7 @@ jobs:
             -archivePath ios/PrimoMarble.xcarchive \
             -exportPath ios/output \
             -exportOptionsPlist ExportOptions.plist \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8 \
+            -authenticationKeyPath "$KEY_PATH" \
             -authenticationKeyID "3CL3588VSB" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
