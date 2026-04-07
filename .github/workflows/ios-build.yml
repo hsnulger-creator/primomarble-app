@@ -34,10 +34,7 @@ jobs:
       - name: Write App Store Connect API key
         env:
           PRIVATE_KEY_B64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
-        run: |
-          echo "$PRIVATE_KEY_B64" | base64 --decode > AuthKey_7369S7N8QZ.p8
-          echo "File size: $(wc -c < AuthKey_7369S7N8QZ.p8) bytes"
-          echo "First line: $(head -1 AuthKey_7369S7N8QZ.p8)"
+        run: python3 -c "import os,base64; open('AuthKey_7369S7N8QZ.p8','wb').write(base64.b64decode(os.environ['PRIVATE_KEY_B64']))"
 
       - name: Detect workspace and scheme
         run: |
