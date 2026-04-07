@@ -40,7 +40,7 @@ jobs:
           import os, base64
           key = os.environ['PRIVATE_KEY_B64'].strip()
           data = base64.b64decode(key)
-          path = os.path.expanduser('~/.appstoreconnect/private_keys/AuthKey_7369S7N8QZ.p8')
+          path = os.path.expanduser('~/.appstoreconnect/private_keys/AuthKey_3CL3588VSB.p8')
           open(path, 'wb').write(data)
           print(f'Written {len(data)} bytes to {path}')
           "
@@ -64,7 +64,7 @@ jobs:
             archive \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM=K6864D294S \
-            -authenticationKeyID "7369S7N8QZ" \
+            -authenticationKeyID "3CL3588VSB" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
 
@@ -94,7 +94,7 @@ jobs:
             -archivePath ios/PrimoMarble.xcarchive \
             -exportPath ios/output \
             -exportOptionsPlist ExportOptions.plist \
-            -authenticationKeyID "7369S7N8QZ" \
+            -authenticationKeyID "3CL3588VSB" \
             -authenticationKeyIssuerID "cf8f6456-896e-47ed-a844-e20e07e7126f" \
             -allowProvisioningUpdates
 
