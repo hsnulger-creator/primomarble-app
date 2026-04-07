@@ -47,7 +47,7 @@ jobs:
 
       - name: Detect workspace and scheme
         run: |
-          WORKSPACE=$(ls ios/*.xcworkspace | head -1)
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
           SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           echo "WORKSPACE=$WORKSPACE" >> $GITHUB_ENV
           echo "SCHEME=$SCHEME" >> $GITHUB_ENV
