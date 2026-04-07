@@ -32,7 +32,7 @@ jobs:
         run: pod install
 
       - name: Write App Store Connect API key
-        run: echo "${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}" > AuthKey.p8
+        run: echo "${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}" | base64 --decode > AuthKey.p8
 
       - name: Detect workspace and scheme
         run: |
