@@ -11,21 +11,6 @@ platform :ios do
       in_house: false
     )
 
-    cert(
-      api_key: api_key,
-      output_path: "#{ENV.fetch('RUNNER_TEMP', '/tmp')}/certs",
-      filename: "distribution"
-    )
-
-    # Export the certificate + key as p12 so we can save it as a secret for future runs
-    p12_path = "#{ENV.fetch('RUNNER_TEMP', '/tmp')}/certs/distribution.p12"
-    p12_password = "primomarble123"
-    sh("security export -k ~/Library/Keychains/login.keychain-db -t identities -f pkcs12 -P '#{p12_password}' -o '#{p12_path}' 2>/dev/null || security export -k /Library/Keychains/System.keychain -t identities -f pkcs12 -P '#{p12_password}' -o '#{p12_path}'")
-    p12_b64 = sh("base64 -i '#{p12_path}'", log: false).strip
-    puts "===== SAVE THIS AS GITHUB SECRET 'DISTRIBUTION_CERT_P12' ====="
-    puts p12_b64
-    puts "===== P12 PASSWORD IS: #{p12_password} (save as 'DISTRIBUTION_CERT_PASSWORD') ====="
-
     sigh(
       api_key: api_key,
       app_identifier: "com.primomarble.daycheckapp",

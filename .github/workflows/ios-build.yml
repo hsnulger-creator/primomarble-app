@@ -41,6 +41,9 @@ jobs:
           echo "KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
           echo "Key written: $(wc -c < "$KEY_PATH") bytes"
 
+      - name: Create distribution certificate
+        run: node .github/scripts/create-dist-cert.js
+
       - name: Build with fastlane
         run: fastlane ios release
 
