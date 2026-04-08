@@ -11,15 +11,6 @@ platform :ios do
       in_house: false
     )
 
-    produce(
-      api_key: api_key,
-      app_identifier: "com.primomarble.daycheckapp",
-      app_name: "Primo Marble Day Check",
-      language: "English",
-      sku: "primomarble001",
-      skip_itc: false
-    )
-
     cert(
       api_key: api_key,
       output_path: "#{ENV.fetch('RUNNER_TEMP', '/tmp')}/certs"
