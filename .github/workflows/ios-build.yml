@@ -60,6 +60,7 @@ jobs:
             -archivePath ios/PrimoMarble.xcarchive \
             archive \
             CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM=K6864D294S \
             -authenticationKeyPath "$KEY_PATH" \
             -authenticationKeyID "3CL3588VSB" \
