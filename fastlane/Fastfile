@@ -30,6 +30,7 @@ platform :ios do
       output_directory: "ios/output",
       output_name: "PrimoMarble.ipa",
       export_method: "app-store",
+      xcargs: "DEVELOPMENT_TEAM=K6864D294S CODE_SIGN_STYLE=Automatic",
       export_options: {
         teamID: "K6864D294S",
         uploadBitcode: false,
