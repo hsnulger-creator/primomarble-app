@@ -18,6 +18,15 @@ platform :ios do
       force: true
     )
 
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      team_id: "K6864D294S",
+      bundle_identifier: "com.primomarble.daycheckapp",
+      code_sign_identity: "iPhone Distribution",
+      profile_uuid: Actions.lane_context[SharedValues::SIGH_UUID],
+      path: "ios/PrimoMarble.xcodeproj"
+    )
+
     build_app(
       workspace: "ios/PrimoMarble.xcworkspace",
       scheme: "PrimoMarble",
@@ -25,7 +34,6 @@ platform :ios do
       output_directory: "ios/output",
       output_name: "PrimoMarble.ipa",
       export_method: "app-store",
-      xcargs: "DEVELOPMENT_TEAM=K6864D294S CODE_SIGN_STYLE=Automatic",
       export_options: {
         teamID: "K6864D294S",
         uploadBitcode: false,
