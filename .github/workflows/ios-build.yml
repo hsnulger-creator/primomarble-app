@@ -41,8 +41,19 @@ jobs:
           echo "KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
           echo "Key written: $(wc -c < "$KEY_PATH") bytes"
 
-      - name: Create distribution certificate
-        run: node .github/scripts/create-dist-cert.js
+      - name: Import distribution certificate
+        env:
+          DIST_CERT_P12_B64: ${{ secrets.DISTRIBUTION_CERT_P12 }}
+          DIST_CERT_PASSWORD: ${{ secrets.DISTRIBUTION_CERT_PASSWORD }}
+        run: |
+          P12_PATH="$RUNNER_TEMP/distribution.p12"
+          echo "$DIST_CERT_P12_B64" | base64 --decode > "$P12_PATH"
+          echo "P12 size: $(wc -c < "$P12_PATH") bytes"
+          security import "$P12_PATH" -P "$DIST_CERT_PASSWORD" \
+            -A -t cert -f pkcs12 -k ~/Library/Keychains/login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple: -k "" \
+            ~/Library/Keychains/login.keychain-db
+          echo "Certificate imported successfully"
 
       - name: Build with fastlane
         run: fastlane ios release
