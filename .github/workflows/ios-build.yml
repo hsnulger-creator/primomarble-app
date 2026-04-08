@@ -47,7 +47,8 @@ jobs:
           DIST_CERT_PASSWORD: ${{ secrets.DISTRIBUTION_CERT_PASSWORD }}
         run: |
           P12_PATH="$RUNNER_TEMP/distribution.p12"
-          echo "$DIST_CERT_P12_B64" | base64 --decode > "$P12_PATH"
+          echo "Secret length: ${#DIST_CERT_P12_B64}"
+          printf '%s' "$DIST_CERT_P12_B64" | base64 --decode > "$P12_PATH"
           echo "P12 size: $(wc -c < "$P12_PATH") bytes"
           security import "$P12_PATH" -P "$DIST_CERT_PASSWORD" \
             -A -t cert -f pkcs12 -k ~/Library/Keychains/login.keychain-db
