@@ -1,0 +1,40 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build for App Store"
+  lane :release do
+    api_key = app_store_connect_api_key(
+      key_id: "3CL3588VSB",
+      issuer_id: "cf8f6456-896e-47ed-a844-e20e07e7126f",
+      key_filepath: ENV["KEY_PATH"],
+      duration: 1200,
+      in_house: false
+    )
+
+    cert(
+      api_key: api_key,
+      output_path: "#{ENV.fetch('RUNNER_TEMP', '/tmp')}/certs"
+    )
+
+    sigh(
+      api_key: api_key,
+      app_identifier: "com.primomarble.daycheckapp",
+      output_path: "#{ENV.fetch('RUNNER_TEMP', '/tmp')}/profiles",
+      force: true
+    )
+
+    build_app(
+      workspace: "ios/PrimoMarble.xcworkspace",
+      scheme: "PrimoMarble",
+      configuration: "Release",
+      output_directory: "ios/output",
+      output_name: "PrimoMarble.ipa",
+      export_method: "app-store",
+      export_options: {
+        teamID: "K6864D294S",
+        uploadBitcode: false,
+        compileBitcode: false
+      }
+    )
+  end
+end
