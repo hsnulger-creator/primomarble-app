@@ -47,13 +47,21 @@ jobs:
           DIST_CERT_PASSWORD: ${{ secrets.DISTRIBUTION_CERT_PASSWORD }}
         run: |
           P12_PATH="$RUNNER_TEMP/distribution.p12"
-          echo "Secret length: ${#DIST_CERT_P12_B64}"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          KEYCHAIN_PASSWORD="signing-$(openssl rand -hex 8)"
+
           printf '%s' "$DIST_CERT_P12_B64" | base64 --decode > "$P12_PATH"
           echo "P12 size: $(wc -c < "$P12_PATH") bytes"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security import "$P12_PATH" -P "$DIST_CERT_PASSWORD" \
-            -A -t cert -f pkcs12 -k ~/Library/Keychains/login.keychain-db
-          security set-key-partition-list -S apple-tool:,apple: -k "" \
-            ~/Library/Keychains/login.keychain-db
+            -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" \
+            $(security list-keychains -d user | sed s/\"//g)
           echo "Certificate imported successfully"
 
       - name: Build with fastlane
