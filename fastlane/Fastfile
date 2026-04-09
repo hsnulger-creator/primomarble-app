@@ -40,5 +40,11 @@ platform :ios do
         compileBitcode: false
       }
     )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: "ios/output/PrimoMarble.ipa",
+      skip_waiting_for_build_processing: true
+    )
   end
 end
