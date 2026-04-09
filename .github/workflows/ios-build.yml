@@ -27,6 +27,17 @@ jobs:
       - name: Run Expo Prebuild (iOS)
         run: npx expo prebuild --platform ios --clean
 
+      - name: Patch expo-modules-core for Xcode 16
+        run: |
+          CORE=node_modules/expo-modules-core/ios
+          sed -i '' 's/: ExpoView, @MainActor AnyExpoSwiftUIHostingView/: ExpoView, AnyExpoSwiftUIHostingView/' \
+            "$CORE/Core/Views/SwiftUI/SwiftUIHostingView.swift"
+          sed -i '' 's/extension ExpoSwiftUI.SwiftUIVirtualView: @MainActor ExpoSwiftUI.ViewWrapper/extension ExpoSwiftUI.SwiftUIVirtualView: ExpoSwiftUI.ViewWrapper/' \
+            "$CORE/Core/Views/SwiftUI/SwiftUIVirtualView.swift"
+          sed -i '' 's/extension UIView: @MainActor AnyArgument/extension UIView: AnyArgument/' \
+            "$CORE/Core/Views/ViewDefinition.swift"
+          echo "Patched expo-modules-core Swift files"
+
       - name: Patch Podfile for Swift 5.9
         run: |
           node -e "
