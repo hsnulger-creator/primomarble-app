@@ -27,27 +27,23 @@ jobs:
       - name: Run Expo Prebuild (iOS)
         run: npx expo prebuild --platform ios --clean
 
-      - name: Fix Swift concurrency in Podfile
-        run: |
-          python3 - <<'PYEOF'
-          import re
-          content = open('ios/Podfile').read()
-          patch = """
-            installer.pods_project.targets.each do |target|
-              target.build_configurations.each do |config|
-                config.build_settings['SWIFT_VERSION'] = '5'
-                config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
-              end
-            end
-          """
-          content = re.sub(r'(post_install do \|installer\|)', r'\1' + patch, content, count=1)
-          open('ios/Podfile', 'w').write(content)
-          print('Podfile patched successfully')
-          PYEOF
-
       - name: Install CocoaPods
         working-directory: ios
         run: pod install
+
+      - name: Fix Swift settings in Pods xcconfig files
+        run: |
+          find ios/Pods/Target\ Support\ Files -name "*.xcconfig" | while read f; do
+            if grep -q "SWIFT_VERSION" "$f"; then
+              sed -i '' 's/SWIFT_VERSION = [0-9.]*/SWIFT_VERSION = 5.9/' "$f"
+            else
+              echo "SWIFT_VERSION = 5.9" >> "$f"
+            fi
+            if ! grep -q "SWIFT_STRICT_CONCURRENCY" "$f"; then
+              echo "SWIFT_STRICT_CONCURRENCY = minimal" >> "$f"
+            fi
+          done
+          echo "Swift settings applied to all pod xcconfig files"
 
       - name: Write App Store Connect API key
         env:
