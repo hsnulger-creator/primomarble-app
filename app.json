@@ -21,7 +21,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.primomarble.daycheckapp",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": false,
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Used for attaching photos to inspection reports.",

@@ -7,6 +7,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
+import { loadUsersFromServer } from '../api';
 
 const COLORS = {
   primary: '#1a4ed8',
@@ -35,6 +36,14 @@ export default function LoginScreen({ navigation }) {
   );
 
   const loadUsers = async () => {
+    try {
+      const serverUsers = await loadUsersFromServer();
+      if (serverUsers && serverUsers.length > 0) {
+        setUsers(serverUsers);
+        await AsyncStorage.setItem('users', JSON.stringify(serverUsers));
+        return;
+      }
+    } catch (_) {}
     const stored = await AsyncStorage.getItem('users');
     if (stored) setUsers(JSON.parse(stored));
   };

@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
+import { saveUsersToServer, loadUsersFromServer } from '../api';
 
 const COLORS = {
   primary: '#1a4ed8',
@@ -86,15 +87,23 @@ export default function SettingsScreen({ navigation, route }) {
   // ── Users ──────────────────────────────────────────────────────────────────
 
   const loadUsers = async () => {
-    const stored = await AsyncStorage.getItem('users');
     let list;
-    if (stored) {
-      list = JSON.parse(stored);
-      // Migrate old users without isAdmin field
-      list = list.map(u => ({ isAdmin: false, ...u }));
-    } else {
-      list = [DEFAULT_USER];
-      await AsyncStorage.setItem('users', JSON.stringify(list));
+    try {
+      const serverUsers = await loadUsersFromServer();
+      if (serverUsers && serverUsers.length > 0) {
+        list = serverUsers.map(u => ({ isAdmin: false, ...u }));
+        await AsyncStorage.setItem('users', JSON.stringify(list));
+      }
+    } catch (_) {}
+    if (!list) {
+      const stored = await AsyncStorage.getItem('users');
+      if (stored) {
+        list = JSON.parse(stored).map(u => ({ isAdmin: false, ...u }));
+      } else {
+        list = [DEFAULT_USER];
+        await AsyncStorage.setItem('users', JSON.stringify(list));
+        await saveUsersToServer(list);
+      }
     }
     setUsers(list);
     const me = list.find(u => u.username === currentUsername);
@@ -104,6 +113,7 @@ export default function SettingsScreen({ navigation, route }) {
   const saveUsers = async (updated) => {
     await AsyncStorage.setItem('users', JSON.stringify(updated));
     setUsers(updated);
+    await saveUsersToServer(updated);
   };
 
   // Admin: add new user
