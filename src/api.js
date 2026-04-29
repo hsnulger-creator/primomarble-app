@@ -32,3 +32,13 @@ export async function loadUsersFromServer() {
   if (res.ok && res.data?.users) return res.data.users;
   return null;
 }
+
+export async function saveEmailToServer(email) {
+  return saveDraft(SYSTEM_KEY, 'email', { email });
+}
+
+export async function loadEmailFromServer() {
+  const res = await loadDraftFromServer(SYSTEM_KEY, 'email');
+  if (res.ok && res.data?.email) return res.data.email;
+  return null;
+}

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { saveUsersToServer, loadUsersFromServer } from '../api';
+import { saveUsersToServer, loadUsersFromServer, saveEmailToServer, loadEmailFromServer } from '../api';
 
 const COLORS = {
   primary: '#1a4ed8',
@@ -51,6 +51,15 @@ export default function SettingsScreen({ navigation, route }) {
   // ── Email ──────────────────────────────────────────────────────────────────
 
   const loadEmail = async () => {
+    try {
+      const serverEmail = await loadEmailFromServer();
+      if (serverEmail) {
+        setManagerEmail(serverEmail);
+        setSavedEmail(serverEmail);
+        await AsyncStorage.setItem('managerEmail', serverEmail);
+        return;
+      }
+    } catch (_) {}
     const email = await AsyncStorage.getItem('managerEmail');
     if (email) { setManagerEmail(email); setSavedEmail(email); }
   };
@@ -65,6 +74,7 @@ export default function SettingsScreen({ navigation, route }) {
       Alert.alert('Invalid Email', 'Please enter a valid email address.'); return;
     }
     await AsyncStorage.setItem('managerEmail', managerEmail.trim());
+    await saveEmailToServer(managerEmail.trim());
     setSavedEmail(managerEmail.trim());
     setEmailSaved(true);
     setTimeout(() => setEmailSaved(false), 3000);
