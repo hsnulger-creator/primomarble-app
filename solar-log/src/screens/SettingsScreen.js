@@ -10,7 +10,8 @@ import {
   getSettings, saveSettings, getReadings, mergeReadings, clearAll,
   getAccount, saveAccount, removeAccount,
 } from '../storage';
-import { createClient, hashPassword } from '../smartess';
+import { createClient, hashPassword, runDiagnostics } from '../smartess';
+import { todayKey } from '../stats.js';
 import { syncNow } from '../sync';
 import { parseKwh, toCsv, parseCsv } from '../stats';
 
@@ -49,6 +50,18 @@ export default function SettingsScreen({ navigation }) {
       setAccount((await syncNow()) || link);
     } catch (e) {
       Alert.alert('Could not connect', e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDiagnostics = async () => {
+    setBusy(true);
+    try {
+      const report = await runDiagnostics(createClient(account), todayKey());
+      await Share.share({ title: 'Solar Log diagnostics', message: report });
+    } catch (e) {
+      Alert.alert('Diagnostics failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -129,6 +142,15 @@ export default function SettingsScreen({ navigation }) {
                 you open the app.
               </Text>
               {!!account.lastError && <Text style={styles.error}>{account.lastError}</Text>}
+              <TouchableOpacity
+                style={[styles.buttonOutline, styles.spaced]}
+                onPress={handleDiagnostics}
+                disabled={busy}
+              >
+                <Text style={styles.buttonOutlineText}>
+                  {busy ? 'Collecting…' : 'Run diagnostics and share'}
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.buttonOutline} onPress={handleDisconnect}>
                 <Text style={styles.buttonOutlineText}>Disconnect</Text>
               </TouchableOpacity>
@@ -235,6 +257,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonOutlineText: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  spaced: { marginBottom: 10 },
   error: { color: colors.red, fontSize: 13, marginBottom: 12 },
   danger: { paddingVertical: 14, alignItems: 'center' },
   dangerText: { color: colors.red, fontSize: 15, fontWeight: '600' },

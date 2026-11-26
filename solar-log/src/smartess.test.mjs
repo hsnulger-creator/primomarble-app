@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import sha1 from './sha1.js';
-import { createClient, fetchProduction, hashPassword, buildActionString } from './smartess.js';
+import {
+  createClient, fetchProduction, hashPassword, buildActionString, pickTodayEnergy, runDiagnostics,
+} from './smartess.js';
 
 const ref = (s) => createHash('sha1').update(s, 'utf8').digest('hex');
 
@@ -19,7 +21,7 @@ test('action string is encoded the way it is signed', () => {
 });
 
 // Fake cloud that checks every signature exactly as the real one is described to.
-const fakeCloud = (password, { history = true } = {}) => {
+const fakeCloud = (password, { history = true, viaCollector = false } = {}) => {
   const calls = [];
   const fetchImpl = async (url) => {
     const m = url.match(/\?sign=([0-9a-f]{40})&salt=(\d+)(?:&token=([^&]+))?(&action=(\w+).*)$/);
@@ -33,6 +35,27 @@ const fakeCloud = (password, { history = true } = {}) => {
     }
     if (token !== 'TOK' || sign !== ref(`${salt}SECTOK${actionString}`)) return json({ err: 4, desc: 'ERR_SIGN' });
     if (action === 'queryPlants') return json({ err: 0, dat: { plant: [{ pid: 7 }] } });
+    if (viaCollector) {
+      // An account like the one that reported ERR_NOT_FOUND_DEVICE (258).
+      if (action === 'webQueryDeviceEs') return json({ err: 258, desc: 'ERR_NOT_FOUND_DEVICE' });
+      if (action === 'webQueryCollectorsEs') return json({ err: 0, dat: { collector: [{ pn: 'PN1' }] } });
+      if (action === 'queryCollectorDevices') {
+        assert.match(actionString, /pn=PN1/);
+        return json({ err: 0, dat: { dev: [{ sn: 'SN1', devcode: 2400, devaddr: 1 }] } });
+      }
+      if (action === 'queryDeviceLastData') {
+        assert.match(actionString, /pn=PN1&devcode=2400&devaddr=1&sn=SN1&i18n=en/);
+        return json({ err: 0, dat: [
+          { title: 'Load energy today', val: '30.0', unit: 'kWh' },
+          { title: 'PV generation today', val: '18.2', unit: 'kWh' },
+          { title: 'PV power', val: '3.1', unit: 'kW' },
+        ] });
+      }
+      if (action === 'queryDeviceEnergyMonthPerDay') {
+        return json({ err: 0, dat: { perday: [{ val: '11.0', ts: '2026-11-05 00:00:00' }] } });
+      }
+      return json({ err: 12, desc: 'ERR_NO_RECORD' });
+    }
     if (action === 'webQueryDeviceEs') {
       return json({ err: 0, dat: { device: [{ energyToday: '12.5' }, { energyToday: 3.25 }, { status: 0 }] } });
     }
@@ -67,4 +90,27 @@ test('reports a wrong password and network failures clearly', async () => {
   await assert.rejects(bad.login(), /Wrong SmartESS password/);
   const offline = createClient({ usr: 'me', pwdHash: 'x', fetchImpl: async () => { throw new Error('boom'); } });
   await assert.rejects(offline.login(), /Could not reach SmartESS/);
+});
+
+test('finds the inverter through its collector when the plant lists no devices', async () => {
+  const cloud = fakeCloud('s3cret', { viaCollector: true });
+  const client = createClient({ usr: 'me', pwdHash: hashPassword('s3cret'), fetchImpl: cloud.fetchImpl });
+  assert.deepEqual(await fetchProduction(client, ['2026-11'], '2026-11-26'), {
+    today: 18.2, devices: 1, history: { '2026-11-05': 11 },
+  });
+});
+
+test('pickTodayEnergy prefers solar production over other daily counters', () => {
+  assert.equal(pickTodayEnergy([{ title: 'Battery charge today', val: '4', unit: 'kWh' }]), null);
+  assert.equal(pickTodayEnergy([{ title: 'Daily energy', val: '7.5', unit: 'kWh' }]), 7.5);
+  assert.equal(pickTodayEnergy([{ title: 'Total PV energy', val: '900', unit: 'kWh' }]), null);
+});
+
+test('diagnostics lists raw answers without the session token', async () => {
+  const cloud = fakeCloud('s3cret', { viaCollector: true });
+  const client = createClient({ usr: 'me', pwdHash: hashPassword('s3cret'), fetchImpl: cloud.fetchImpl });
+  const report = await runDiagnostics(client, '2026-11-26');
+  assert.match(report, /ERR_NOT_FOUND_DEVICE/);
+  assert.match(report, /PV generation today/);
+  assert.ok(!report.includes('TOK') && !report.includes('SEC'));
 });

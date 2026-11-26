@@ -17,7 +17,7 @@ export async function syncNow() {
     const today = todayKey();
     const now = parseKey(today);
     const months = [monthOf(new Date(now.getFullYear(), now.getMonth() - 1, 1)), monthOf(now)];
-    const result = await fetchProduction(createClient(account), months);
+    const result = await fetchProduction(createClient(account), months, today);
 
     const existing = await getReadings();
     const rows = {};
