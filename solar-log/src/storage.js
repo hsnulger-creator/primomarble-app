@@ -4,6 +4,7 @@ const KEYS = {
   readings: 'solarlog.readings',
   notes: 'solarlog.notes',
   settings: 'solarlog.settings',
+  account: 'solarlog.smartess',
 };
 
 export const DEFAULT_SETTINGS = { rate: 0.3, currency: '$' };
@@ -59,5 +60,11 @@ export const getSettings = async () => ({
 });
 
 export const saveSettings = (settings) => save(KEYS.settings, settings);
+
+// SmartESS link: { usr, pwdHash, lastSync, lastError } or null.
+// Only the SHA-1 of the password is kept, never the password itself.
+export const getAccount = () => load(KEYS.account, null);
+export const saveAccount = (account) => save(KEYS.account, account);
+export const removeAccount = () => AsyncStorage.removeItem(KEYS.account);
 
 export const clearAll = () => AsyncStorage.multiRemove(Object.values(KEYS));

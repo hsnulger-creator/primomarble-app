@@ -6,7 +6,8 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import BarChart from '../components/BarChart';
 import { colors } from '../theme';
-import { getReadings, getSettings, DEFAULT_SETTINGS } from '../storage';
+import { getReadings, getSettings, getAccount, DEFAULT_SETTINGS } from '../storage';
+import { syncNow, AUTO_SYNC_MS } from '../sync';
 import {
   summary, dailySeries, monthlySeries, todayKey, formatKwh, formatDate,
 } from '../stats';
@@ -21,21 +22,37 @@ export default function HomeScreen({ navigation }) {
   const [readings, setReadings] = useState({});
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [range, setRange] = useState('7d');
+  const [account, setAccount] = useState(null);
+  const [syncing, setSyncing] = useState(false);
+
+  const runSync = useCallback(async () => {
+    setSyncing(true);
+    const updated = await syncNow();
+    setAccount(updated);
+    setReadings(await getReadings());
+    setSyncing(false);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      Promise.all([getReadings(), getSettings()]).then(([r, s]) => {
-        if (active) {
-          setReadings(r);
-          setSettings(s);
-        }
+      Promise.all([getReadings(), getSettings(), getAccount()]).then(([r, s, a]) => {
+        if (!active) return;
+        setReadings(r);
+        setSettings(s);
+        setAccount(a);
+        // Refresh from the inverter when the last sync is getting old.
+        if (a && Date.now() - (a.lastSync || 0) > AUTO_SYNC_MS) runSync();
       });
       return () => {
         active = false;
       };
-    }, [])
+    }, [runSync])
   );
+
+  const syncTime = account && account.lastSync
+    ? new Date(account.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   const today = todayKey();
   const stats = summary(readings, today);
@@ -81,6 +98,20 @@ export default function HomeScreen({ navigation }) {
               {stats.today === null ? "Log today's reading" : "Edit today's reading"}
             </Text>
           </TouchableOpacity>
+          {account && (
+            <View style={styles.syncRow}>
+              <Text style={[styles.syncText, !!account.lastError && !syncing && styles.syncError]} numberOfLines={2}>
+                {syncing
+                  ? 'Syncing with SmartESS…'
+                  : account.lastError || (syncTime ? `SmartESS synced ${syncTime}` : 'SmartESS not synced yet')}
+              </Text>
+              {!syncing && (
+                <TouchableOpacity onPress={runSync}>
+                  <Text style={styles.syncButton}>Sync now</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={styles.grid}>
@@ -162,6 +193,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   primaryButtonText: { color: colors.navy, fontSize: 16, fontWeight: '700' },
+  syncRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
+  syncText: { flex: 1, color: '#94a3b8', fontSize: 12, marginRight: 10 },
+  syncError: { color: '#fca5a5' },
+  syncButton: { color: colors.sun, fontSize: 13, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   tile: {
     width: '48.5%',

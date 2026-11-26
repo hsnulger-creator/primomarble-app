@@ -8,19 +8,27 @@ import ScreenHeader from '../components/ScreenHeader';
 import { colors } from '../theme';
 import {
   getSettings, saveSettings, getReadings, mergeReadings, clearAll,
+  getAccount, saveAccount, removeAccount,
 } from '../storage';
+import { createClient, hashPassword } from '../smartess';
+import { syncNow } from '../sync';
 import { parseKwh, toCsv, parseCsv } from '../stats';
 
 export default function SettingsScreen({ navigation }) {
   const [rate, setRate] = useState('');
   const [currency, setCurrency] = useState('');
   const [csv, setCsv] = useState('');
+  const [account, setAccount] = useState(null);
+  const [usr, setUsr] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     getSettings().then((s) => {
       setRate(String(s.rate));
       setCurrency(s.currency);
     });
+    getAccount().then(setAccount);
   }, []);
 
   const handleSave = async () => {
@@ -28,6 +36,27 @@ export default function SettingsScreen({ navigation }) {
     if (value === null) return Alert.alert('Check the rate', 'Enter a price per kWh, e.g. 0.30');
     await saveSettings({ rate: value, currency: currency.trim() });
     Alert.alert('Saved', 'Savings now use the new rate.');
+  };
+
+  const handleConnect = async () => {
+    if (!usr.trim() || !password) return Alert.alert('SmartESS', 'Enter your SmartESS username and password.');
+    setBusy(true);
+    try {
+      const link = { usr: usr.trim(), pwdHash: hashPassword(password) };
+      await createClient(link).login(); // throws when the login is refused
+      await saveAccount(link);
+      setPassword('');
+      setAccount((await syncNow()) || link);
+    } catch (e) {
+      Alert.alert('Could not connect', e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    await removeAccount();
+    setAccount(null);
   };
 
   const handleExport = async () => {
@@ -89,6 +118,49 @@ export default function SettingsScreen({ navigation }) {
           <TouchableOpacity style={styles.button} onPress={handleSave}>
             <Text style={styles.buttonText}>Save</Text>
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>SmartESS automatic sync</Text>
+          {account ? (
+            <>
+              <Text style={styles.help}>
+                Connected as {account.usr}. Today's production is read from your inverter whenever
+                you open the app.
+              </Text>
+              {!!account.lastError && <Text style={styles.error}>{account.lastError}</Text>}
+              <TouchableOpacity style={styles.buttonOutline} onPress={handleDisconnect}>
+                <Text style={styles.buttonOutlineText}>Disconnect</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.help}>
+                Sign in with the same account you use in the SmartESS app. The password itself is
+                not stored on this phone.
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={usr}
+                onChangeText={setUsr}
+                placeholder="SmartESS username"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="SmartESS password"
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity style={styles.button} onPress={handleConnect} disabled={busy}>
+                <Text style={styles.buttonText}>{busy ? 'Connecting…' : 'Connect'}</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         <View style={styles.card}>
@@ -155,6 +227,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: colors.navy, fontSize: 16, fontWeight: '700' },
+  buttonOutline: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  buttonOutlineText: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  error: { color: colors.red, fontSize: 13, marginBottom: 12 },
   danger: { paddingVertical: 14, alignItems: 'center' },
   dangerText: { color: colors.red, fontSize: 15, fontWeight: '600' },
 });

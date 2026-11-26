@@ -9,7 +9,22 @@ its own folder, name, icon and Android package (`com.personal.solarlog`).
 - Maintenance notes (cleaning, faults, service visits)
 - Export readings as CSV text, and import by pasting `date,kWh` lines
 
-All data stays on the phone (AsyncStorage). There is no login and no server.
+- Optional automatic sync from the SmartESS cloud (Settings → SmartESS automatic sync)
+
+Data stays on the phone (AsyncStorage); there is no server of our own.
+
+## SmartESS sync
+
+For inverters whose Wi-Fi stick reports to the SmartESS app (set up for a Powland 12 kW with a
+WFBLE.DTU stick). After signing in with the SmartESS account, the app reads the inverter's
+"energy today" counter each time it is opened (at most every 15 minutes, or on "Sync now") and
+saves it as today's reading. It also tries to fill in missing earlier days of this month and
+last month; days already logged are never overwritten.
+
+- Only a SHA-1 of the password is stored, which is what the service's signing needs.
+- `src/smartess.js` follows the request signing used by the open-source ha-dessmonitor and
+  gladys-dessmonitor clients. It is covered by tests against a stand-in server but has not yet
+  been run against a real SmartESS account, and the per-day history call is unconfirmed.
 
 ## Build the Android APK (Windows)
 
