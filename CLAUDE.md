@@ -81,3 +81,8 @@ iOS cannot be built on Windows. Use Codemagic (codemagic.io) — free tier avail
 
 ## Email
 Uses expo-mail-composer (opens native email app with pre-filled report). Manager email is set by user in Settings screen and saved to AsyncStorage.
+
+## Solar Log (separate personal app)
+`solar-log/` is a standalone Expo app for logging solar panel production, unrelated to the
+Primo Marble forms. It has its own `package.json` and `app.json`; see `solar-log/README.md`
+for features and build steps. Build it from `C:\SolarLog`.

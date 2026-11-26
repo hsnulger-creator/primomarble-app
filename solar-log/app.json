@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Solar Log",
+    "slug": "solar-log",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "package": "com.personal.solarlog",
+      "permissions": []
+    },
+    "ios": {
+      "bundleIdentifier": "com.personal.solarlog",
+      "supportsTablet": false,
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+    }
+  }
+}
